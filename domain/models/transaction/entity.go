@@ -5,6 +5,44 @@ import (
 	"time"
 )
 
+type PaymentMethod int
+
+const (
+	NonePaymentMethod PaymentMethod = iota
+	Cash
+	Card
+)
+
+func (pm PaymentMethod) String() string {
+	switch pm {
+	case Cash:
+		return "cash"
+	case Card:
+		return "card"
+	default:
+		return "none"
+	}
+}
+
+func (pm PaymentMethod) MaskingNone() string {
+	s := pm.String()
+	if s == "none" {
+		return ""
+	}
+	return s
+}
+
+func StringToPaymentMethod(s string) PaymentMethod {
+	switch s {
+	case "cash":
+		return Cash
+	case "card":
+		return Card
+	default:
+		return NonePaymentMethod
+	}
+}
+
 type Transaction struct {
 	ID               int64
 	UUID             string

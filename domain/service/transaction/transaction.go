@@ -23,11 +23,6 @@ func (s *service) CreateTransaction(ctx context.Context, trans *transactionEntit
 	for _, item := range trans.TransactionItems {
 		item.UUID = uuid.NewV4().String()
 	}
-	trans.SetTotalAmount()
-	// TODO: maybe introduced enum ?
-	if trans.PaymentMethod == "" {
-		trans.PaymentMethod = "none"
-	}
 	return s.transRepo.CreateTransaction(ctx, trans)
 }
 
@@ -74,8 +69,5 @@ func (s *service) DeleteTransactionItemByIDs(ctx context.Context, transID int64,
 // TODO: acquire lock
 func (s *service) UpdateTranscationByID(ctx context.Context, transID int64, data *transactionEntity.Transaction) error {
 	data.ID = transID
-	if data.PaymentMethod == "" {
-		data.PaymentMethod = "none"
-	}
 	return s.transRepo.UpdateTransaction(ctx, transID, data)
 }

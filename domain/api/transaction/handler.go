@@ -2,13 +2,10 @@ package transaction
 
 import (
 	"context"
-	"fmt"
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 	"net/http"
 	"strconv"
-	"strings"
-	"time"
 	"transaction-api/domain/api/shared"
 	transEntity "transaction-api/domain/models/transaction"
 	"transaction-api/domain/service/transaction"
@@ -43,6 +40,13 @@ func (h *Handler) CreateTransaction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if req.Transaction == nil {
+		shared.ResponseJson(w, shared.ErrorResponse{
+			Message: "transcation payload not found",
+		}, http.StatusBadRequest)
+		return
+	}
+
 	if err := h.validate.Struct(&req); err != nil {
 		shared.ResponseJson(w, shared.ErrorResponse{
 			Message: err.Error(),
@@ -50,27 +54,11 @@ func (h *Handler) CreateTransaction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newTrans := &transEntity.Transaction{
-		UserID:           req.UserID,
-		DeviceTimestamp:  time.Unix(req.DeviceTimestamp, 0),
-		TransactionItems: []*transEntity.TransactionItem{},
-	}
+	newTrans := ParseToTransaction(req.Transaction)
 
-	for _, itemReq := range req.Items {
-		newTrans.TransactionItems = append(newTrans.TransactionItems, &transEntity.TransactionItem{
-			Title: itemReq.Title,
-			Qty:   itemReq.Qty,
-			Price: itemReq.Price,
-		})
-	}
 	err = h.transSvc.CreateTransaction(h.ctx, newTrans)
 
-	resp := CreateTransactionResponse{
-		TransactionID:   newTrans.ID,
-		TransactionUUID: newTrans.UUID,
-	}
-
-	shared.ResponseJson(w, resp, http.StatusCreated)
+	shared.ResponseJson(w, &CreateTransactionResponse{Transaction: ParseToTranscationResponse(newTrans)}, http.StatusCreated)
 
 	return
 }
@@ -85,6 +73,13 @@ func (h *Handler) CreateAndPayTransaction(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	if req.Transaction == nil {
+		shared.ResponseJson(w, shared.ErrorResponse{
+			Message: "transcation payload not found",
+		}, http.StatusBadRequest)
+		return
+	}
+
 	if err := h.validate.Struct(&req); err != nil {
 		shared.ResponseJson(w, shared.ErrorResponse{
 			Message: err.Error(),
@@ -92,21 +87,8 @@ func (h *Handler) CreateAndPayTransaction(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	newTrans := &transEntity.Transaction{
-		UserID:           req.UserID,
-		DeviceTimestamp:  time.Unix(req.DeviceTimestamp, 0),
-		TransactionItems: []*transEntity.TransactionItem{},
-		PaymentMethod:    req.PaymentMethod,
-		PaidAmount:       req.PaidAmount,
-	}
+	newTrans := ParseToTransaction(req.Transaction)
 
-	for _, itemReq := range req.Items {
-		newTrans.TransactionItems = append(newTrans.TransactionItems, &transEntity.TransactionItem{
-			Title: itemReq.Title,
-			Qty:   itemReq.Qty,
-			Price: itemReq.Price,
-		})
-	}
 	err = h.transSvc.CreateAndPayTransaction(h.ctx, newTrans)
 
 	resp := CreateAndPayTransactionResponse{
@@ -178,21 +160,7 @@ func (h *Handler) ListUserTransaction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, trans := range transactions {
-		parsedTrans := &Transaction{
-			ID:              trans.ID,
-			UUID:            trans.UUID,
-			TotalAmount:     trans.TotalAmount,
-			DeviceTimestamp: trans.DeviceTimestamp.Unix(),
-			UserID:          trans.UserID,
-			ChangeAmount:    trans.ChangeAmount,
-			CreatedAt:       trans.CreatedAt,
-			UpdatedAt:       trans.UpdatedAt,
-			Items:           []*TransactionItem{},
-		}
-		if !strings.EqualFold(trans.PaymentMethod, "none") {
-			parsedTrans.PaymentMethod = trans.PaymentMethod
-		}
-		resp.Transactions = append(resp.Transactions, parsedTrans)
+		resp.Transactions = append(resp.Transactions, ParseToTranscationResponse(trans))
 	}
 
 	shared.ResponseJson(w, resp, http.StatusOK)
@@ -299,43 +267,9 @@ func (h *Handler) UpdateTransactionByID(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	trans := &transEntity.Transaction{
-		ID:               req.Transaction.ID,
-		UUID:             req.Transaction.UUID,
-		UserID:           req.Transaction.UserID,
-		DeviceTimestamp:  time.Unix(req.Transaction.DeviceTimestamp, 0),
-		TotalAmount:      req.Transaction.TotalAmount,
-		PaidAmount:       req.Transaction.PaidAmount,
-		ChangeAmount:     req.Transaction.ChangeAmount,
-		PaymentMethod:    req.Transaction.PaymentMethod,
-		TransactionItems: []*transEntity.TransactionItem{},
-	}
+	newTrans := ParseToTransaction(req.Transaction)
 
-	for _, item := range req.Transaction.Items {
-		fmt.Println("masuk sini")
-		trans.TransactionItems = append(trans.TransactionItems, &transEntity.TransactionItem{
-			ID:            item.ID,
-			UUID:          item.UUID,
-			TransactionID: item.TransactionID,
-			Title:         item.Title,
-			Qty:           item.Qty,
-			Price:         item.Price,
-		})
-	}
-	err = h.transSvc.UpdateTranscationByID(h.ctx, orderID, trans)
-	if err != nil {
-		shared.ResponseJson(w, shared.ErrorResponse{
-			Message: err.Error(),
-		}, http.StatusInternalServerError)
-		return
-	}
-	shared.ResponseJson(w, shared.Empty{}, http.StatusOK)
-	return
-}
-
-func (h *Handler) UpdateTransactionItemByID(w http.ResponseWriter, r *http.Request) {
-	var req UpdateTransactionRequest
-	err := util.DecodeToStruct(r.Body, &req)
+	err = h.transSvc.UpdateTranscationByID(h.ctx, orderID, newTrans)
 	if err != nil {
 		shared.ResponseJson(w, shared.ErrorResponse{
 			Message: err.Error(),

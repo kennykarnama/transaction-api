@@ -3,9 +3,7 @@ package transaction
 import "time"
 
 type CreateTransactionRequest struct {
-	UserID          int64              `json:"userID" validate:"required"`
-	DeviceTimestamp int64              `json:"deviceTimestamp" validate:"required"` // unix timestamp UTC
-	Items           []*TransactionItem `json:"items" validate:"required"`
+	Transaction *Transaction `json:"transaction"`
 }
 
 type Transaction struct {
@@ -25,23 +23,18 @@ type Transaction struct {
 type TransactionItem struct {
 	ID            int64  `json:"id"`
 	UUID          string `json:"uuid"`
-	Title         string `json:"title" validate:"required"`
-	Qty           int64  `json:"qty" validate:"required,min=1"`
-	Price         int64  `json:"price" validate:"required,gt=500"`
+	Title         string `json:"title"`
+	Qty           int64  `json:"qty"`
+	Price         int64  `json:"price"`
 	TransactionID int64  `json:"transactionID"`
 }
 
 type CreateTransactionResponse struct {
-	TransactionID   int64  `json:"transactionID"`
-	TransactionUUID string `json:"transactionUUID"`
+	Transaction *Transaction `json:"transaction"`
 }
 
 type CreateAndPayTransactionRequest struct {
-	UserID          int64              `json:"userID" validate:"required"`
-	DeviceTimestamp int64              `json:"deviceTimestamp" validate:"required"`
-	PaymentMethod   string             `json:"paymentMethod" validate:"required"`
-	PaidAmount      int64              `json:"paidAmount" validate:"required"`
-	Items           []*TransactionItem `json:"items" validate:"required"`
+	Transaction *Transaction `json:"transaction"`
 }
 
 type CreateAndPayTransactionResponse struct {
