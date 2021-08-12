@@ -56,3 +56,26 @@ func (s *service) GetTransactionDetailByID(ctx context.Context, transID int64) (
 func (s *service) DeleteTransactionByID(ctx context.Context, transID int64) error {
 	return s.transRepo.DeleteTransactionByID(ctx, transID)
 }
+
+//TODO: implement locking using redis
+// on every endpoint that mutates data
+// also need to check if already paid since, it considered fixed
+func (s *service) DeleteTransactionItemByIDs(ctx context.Context, transID int64, itemID int64) error {
+	trans, err := s.transRepo.GetTransactionDetailByID(ctx, transID)
+	if err != nil {
+		return err
+	}
+	if !trans.IsItemExist(itemID) {
+		return ErrTransactionItemNotExist
+	}
+	return s.transRepo.DeleteTransactionItemByIDs(ctx, itemID)
+}
+
+// TODO: acquire lock
+func (s *service) UpdateTranscationByID(ctx context.Context, transID int64, data *transactionEntity.Transaction) error {
+	data.ID = transID
+	if data.PaymentMethod == "" {
+		data.PaymentMethod = "none"
+	}
+	return s.transRepo.UpdateTransaction(ctx, transID, data)
+}

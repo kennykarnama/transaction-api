@@ -11,4 +11,6 @@ type Service interface {
 	ListTransactionsByID(ctx context.Context, userID int64, paging *transaction.Pagination) ([]*transaction.Transaction, error)
 	GetTransactionDetailByID(ctx context.Context, transID int64) (*transaction.Transaction, error)
 	DeleteTransactionByID(ctx context.Context, transID int64) error
+	DeleteTransactionItemByIDs(ctx context.Context, transID int64, itemId int64) error
+	UpdateTranscationByID(ctx context.Context, transID int64, data *transaction.Transaction) error
 }

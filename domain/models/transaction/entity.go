@@ -47,3 +47,12 @@ type Pagination struct {
 	TotalData int64
 	TotalPage int
 }
+
+func (t *Transaction) IsItemExist(itemID int64) bool {
+	for _, item := range t.TransactionItems {
+		if item.ID == itemID {
+			return true
+		}
+	}
+	return false
+}

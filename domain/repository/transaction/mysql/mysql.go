@@ -63,3 +63,40 @@ func (r *repository) DeleteTransactionByID(ctx context.Context, transID int64) e
 	}
 	return nil
 }
+
+func (r *repository) DeleteTransactionItemByIDs(ctx context.Context, itemID int64) error {
+	r.db.Transaction(func(tx *gorm.DB) error {
+		// get detail itemID
+		var item transaction.TransactionItem
+		err := r.db.Model(&transaction.TransactionItem{}).First(&item, "id = ?", itemID).Error
+		if err != nil {
+			if err == gorm.ErrRecordNotFound {
+				return transRepo.ErrRecordNotFound
+			}
+			return err
+		}
+		// update transaction amount
+		err = r.db.Model(&transaction.Transaction{}).Where("id = ?",
+			item.TransactionID).Update("total_amount", gorm.Expr("total_amount - ?", item.Qty*item.Price)).Error
+		if err != nil {
+			return err
+		}
+
+		err = r.db.Delete(&transaction.TransactionItem{}, "id = ?", itemID).Error
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+	return nil
+}
+
+func (r *repository) UpdateTransaction(ctx context.Context, transID int64, data *transaction.Transaction) error {
+	db := r.db.Session(&gorm.Session{FullSaveAssociations: true})
+	err := db.Updates(data).Error
+	if err != nil {
+		return err
+	}
+	return nil
+}

@@ -45,6 +45,7 @@ func main() {
 			Addr: ":" + cfg.RestPort,
 		},
 	}
+	
 	r := mux.NewRouter()
 	r.Handle("/api/v1/order", handlers.LoggingHandler(os.Stdout, http.HandlerFunc(transHandler.CreateTransaction))).Methods("POST")
 	r.Handle("/api/v1/order/withPayment", handlers.LoggingHandler(os.Stdout, http.HandlerFunc(transHandler.CreateAndPayTransaction))).Methods("POST")
@@ -52,7 +53,7 @@ func main() {
 	r.Handle("/api/v1/order/{id}", handlers.LoggingHandler(os.Stdout, http.HandlerFunc(transHandler.GetTransactionDetail))).Methods("GET")
 	r.Handle("/api/v1/order/{id}", handlers.LoggingHandler(os.Stdout, http.HandlerFunc(transHandler.UpdateTransactionByID))).Methods("PUT")
 	r.Handle("/api/v1/order/{id}", handlers.LoggingHandler(os.Stdout, http.HandlerFunc(transHandler.DeleteTransactionByID))).Methods("DELETE")
-	r.Handle("/api/v1/order/{id}/items", handlers.LoggingHandler(os.Stdout, http.HandlerFunc(transHandler.DeleteTransactionItems))).Methods("DELETE")
+	r.Handle("/api/v1/order/{orderID}/item/{itemID}", handlers.LoggingHandler(os.Stdout, http.HandlerFunc(transHandler.DeleteTransactionItem))).Methods("DELETE")
 
 	httpServer.Handler = r
 

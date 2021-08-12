@@ -16,15 +16,19 @@ type Transaction struct {
 	UserID          int64              `json:"userID,omitempty"`
 	ChangeAmount    int64              `json:"changeAmount,omitempty"`
 	PaymentMethod   string             `json:"paymentMethod,omitempty"`
+	PaidAmount      int64              `json:"paidAmount,omitempty"`
 	CreatedAt       time.Time          `json:"createdAt,omitempty"`
 	UpdatedAt       time.Time          `json:"updatedAt,omitempty"`
 	Items           []*TransactionItem `json:"items,omitempty"`
 }
 
 type TransactionItem struct {
-	Title string `json:"title" validate:"required"`
-	Qty   int64  `json:"qty" validate:"required,min=1"`
-	Price int64  `json:"price" validate:"required,gt=500"`
+	ID            int64  `json:"id"`
+	UUID          string `json:"uuid"`
+	Title         string `json:"title" validate:"required"`
+	Qty           int64  `json:"qty" validate:"required,min=1"`
+	Price         int64  `json:"price" validate:"required,gt=500"`
+	TransactionID int64  `json:"transactionID"`
 }
 
 type CreateTransactionResponse struct {
@@ -69,8 +73,4 @@ type GetTransactionDetailResponse struct {
 
 type UpdateTransactionRequest struct {
 	Transaction *Transaction `json:"transaction"`
-}
-
-type DeleteTransactionItemQueryParam struct {
-	IDS string // comma separated
 }
