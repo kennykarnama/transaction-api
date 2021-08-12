@@ -10,6 +10,9 @@ import (
 	"os"
 	"transaction-api/config"
 	"transaction-api/domain/api/transaction"
+	"transaction-api/domain/repository/transaction/mysql"
+	transService "transaction-api/domain/service/transaction"
+	"transaction-api/util/dbconn"
 )
 
 type server struct {
@@ -31,7 +34,12 @@ func main() {
 	}
 	v := validator.New()
 
-	transHandler := transaction.NewHandler(ctx, v, nil)
+	db := dbconn.InitGorm(cfg.ServiceName)
+
+	transRepo := mysql.NewRepository(db)
+
+	transService := transService.NewService(transRepo)
+	transHandler := transaction.NewHandler(ctx, v, transService)
 	httpServer := &server{
 		Server: http.Server{
 			Addr: ":" + cfg.RestPort,
@@ -39,6 +47,12 @@ func main() {
 	}
 	r := mux.NewRouter()
 	r.Handle("/api/v1/order", handlers.LoggingHandler(os.Stdout, http.HandlerFunc(transHandler.CreateTransaction))).Methods("POST")
+	r.Handle("/api/v1/order/withPayment", handlers.LoggingHandler(os.Stdout, http.HandlerFunc(transHandler.CreateAndPayTransaction))).Methods("POST")
+	r.Handle("/api/v1/orders/user/{id}", handlers.LoggingHandler(os.Stdout, http.HandlerFunc(transHandler.ListUserTransaction))).Methods("GET")
+	r.Handle("/api/v1/order/{id}", handlers.LoggingHandler(os.Stdout, http.HandlerFunc(transHandler.GetTransactionDetail))).Methods("GET")
+	r.Handle("/api/v1/order/{id}", handlers.LoggingHandler(os.Stdout, http.HandlerFunc(transHandler.UpdateTransactionByID))).Methods("PUT")
+	r.Handle("/api/v1/order/{id}", handlers.LoggingHandler(os.Stdout, http.HandlerFunc(transHandler.DeleteTransactionByID))).Methods("DELETE")
+	r.Handle("/api/v1/order/{id}/items", handlers.LoggingHandler(os.Stdout, http.HandlerFunc(transHandler.DeleteTransactionItems))).Methods("DELETE")
 
 	httpServer.Handler = r
 

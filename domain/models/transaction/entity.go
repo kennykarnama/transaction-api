@@ -6,15 +6,15 @@ type Transaction struct {
 	ID              int64
 	UUID            string
 	UserID          int64
-	DeviceTimeStamp time.Time
+	DeviceTimestamp time.Time
 	TotalAmount     int64
 	PaidAmount      int64
 	ChangeAmount    int64
 	PaymentMethod   string
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
-	DeletedAt       *time.Time
-	Items           []*TransactionItem
+	DeletedAt        *time.Time
+	TransactionItems []*TransactionItem
 }
 
 type TransactionItem struct {
@@ -27,4 +27,20 @@ type TransactionItem struct {
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
 	DeletedAt     *time.Time
+}
+
+func (t *Transaction) SetTotalAmount() int64 {
+	var total int64
+	for _, item := range t.TransactionItems {
+		total += item.Qty * item.Price
+	}
+	t.TotalAmount = total
+	return total
+}
+
+type Pagination struct {
+	Page      int32
+	PageSize  int32
+	TotalData int64
+	TotalPage int
 }

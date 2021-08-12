@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS transactions (
     total_amount INTEGER NOT NULL DEFAULT 0,
     paid_amount INTEGER NOT NULL DEFAULT 0,
     change_amount INTEGER NOT NULL DEFAULT 0,
-    payment_method ENUM('cash','card') NOT NULL,
+    payment_method ENUM('none', 'cash','card') NOT NULL,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL,
     deleted_at TIMESTAMP
