@@ -1,19 +1,22 @@
 package transaction
 
-import "time"
+import (
+	"gorm.io/gorm"
+	"time"
+)
 
 type Transaction struct {
-	ID              int64
-	UUID            string
-	UserID          int64
-	DeviceTimestamp time.Time
-	TotalAmount     int64
-	PaidAmount      int64
-	ChangeAmount    int64
-	PaymentMethod   string
-	CreatedAt       time.Time
-	UpdatedAt       time.Time
-	DeletedAt        *time.Time
+	ID               int64
+	UUID             string
+	UserID           int64
+	DeviceTimestamp  time.Time
+	TotalAmount      int64
+	PaidAmount       int64
+	ChangeAmount     int64
+	PaymentMethod    string
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
+	DeletedAt        gorm.DeletedAt
 	TransactionItems []*TransactionItem
 }
 
@@ -26,7 +29,7 @@ type TransactionItem struct {
 	Price         int64
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
-	DeletedAt     *time.Time
+	DeletedAt     gorm.DeletedAt
 }
 
 func (t *Transaction) SetTotalAmount() int64 {

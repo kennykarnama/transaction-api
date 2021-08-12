@@ -6,6 +6,7 @@ import (
 	"github.com/kennykarnama/gorm-paginator/pagination"
 	"gorm.io/gorm"
 	"transaction-api/domain/models/transaction"
+	transRepo "transaction-api/domain/repository/transaction"
 )
 
 type repository struct {
@@ -28,7 +29,7 @@ func (r *repository) CreateTransaction(ctx context.Context, trans *transaction.T
 func (r *repository) GetTransactionsByUserID(ctx context.Context, userID int64, paging *transaction.Pagination) ([]*transaction.Transaction, error) {
 	var result []*transaction.Transaction
 	q := r.db.Model(&transaction.Transaction{})
-	q = q.Where("user_id = ?", userID)
+	q = q.Where("user_id = ? AND deleted_at IS NULL", userID)
 	paginator := pagination.Paging(&pagination.Param{
 		DB:      q,
 		Page:    int(paging.Page),
@@ -47,7 +48,18 @@ func (r *repository) GetTransactionDetailByID(ctx context.Context, transID int64
 	var trans transaction.Transaction
 	err := r.db.Preload("TransactionItems").First(&trans, "id = ?", transID).Error
 	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, transRepo.ErrRecordNotFound
+		}
 		return nil, err
 	}
 	return &trans, nil
+}
+
+func (r *repository) DeleteTransactionByID(ctx context.Context, transID int64) error {
+	err := r.db.Delete(&transaction.Transaction{}, "id = ?", transID).Error
+	if err != nil {
+		return err
+	}
+	return nil
 }

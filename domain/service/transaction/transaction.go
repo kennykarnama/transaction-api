@@ -46,5 +46,13 @@ func (s *service) ListTransactionsByID(ctx context.Context, userID int64, paging
 }
 
 func (s *service) GetTransactionDetailByID(ctx context.Context, transID int64) (*transactionEntity.Transaction, error) {
-	return s.transRepo.GetTransactionDetailByID(ctx, transID)
+	trans, err := s.transRepo.GetTransactionDetailByID(ctx, transID)
+	if err == transaction.ErrRecordNotFound {
+		return nil, ErrTransactionNotFound
+	}
+	return trans, nil
+}
+
+func (s *service) DeleteTransactionByID(ctx context.Context, transID int64) error {
+	return s.transRepo.DeleteTransactionByID(ctx, transID)
 }

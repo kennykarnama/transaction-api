@@ -212,6 +212,12 @@ func (h *Handler) GetTransactionDetail(w http.ResponseWriter, r *http.Request) {
 
 	trans, err := h.transSvc.GetTransactionDetailByID(h.ctx, orderID)
 	if err != nil {
+		if err == transaction.ErrTransactionNotFound {
+			shared.ResponseJson(w, shared.ErrorResponse{
+				Message: err.Error(),
+			}, http.StatusNotFound)
+			return
+		}
 		shared.ResponseJson(w, shared.ErrorResponse{
 			Message: err.Error(),
 		}, http.StatusInternalServerError)
@@ -223,6 +229,25 @@ func (h *Handler) GetTransactionDetail(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) DeleteTransactionByID(w http.ResponseWriter, r *http.Request) {
+	pathVariables := mux.Vars(r)
+	transID, err := strconv.ParseInt(pathVariables["id"], 10, 64)
+
+	if err != nil {
+		shared.ResponseJson(w, shared.ErrorResponse{
+			Message: err.Error(),
+		}, http.StatusBadRequest)
+		return
+	}
+
+	err = h.transSvc.DeleteTransactionByID(h.ctx, transID)
+	if err != nil {
+		shared.ResponseJson(w, shared.ErrorResponse{
+			Message: err.Error(),
+		}, http.StatusInternalServerError)
+		return
+	}
+
+	shared.ResponseJson(w, shared.Empty{}, http.StatusOK)
 	return
 }
 
