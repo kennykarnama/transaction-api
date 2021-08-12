@@ -9,7 +9,7 @@
 *.test
 
 *.orig
-.env
+.sh.env
 .envrc
 tmp
 

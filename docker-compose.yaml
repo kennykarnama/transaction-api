@@ -1,0 +1,65 @@
+version: '3'
+services:
+  app:
+    container_name: transaction_api
+    build: .
+    ports:
+      - 8081:8080
+    environment:
+      - TRANSACTION_API_MYSQL_HOST=${TRANSACTION_API_MYSQL_HOST}
+      - TRANSACTION_API_MYSQL_PASSWORD=${TRANSACTION_API_MYSQL_PASSWORD}
+      - TRANSACTION_API_MYSQL_USERNAME=${TRANSACTION_API_MYSQL_USERNAME}
+      - TRANSACTION_API_MYSQL_SINGULAR_TABLE=false
+      - TRANSACTION_API_MYSQL_DB_NAME=${TRANSACTION_API_MYSQL_DB_NAME}
+      - REST_PORT=${REST_PORT}
+      - USER_API_HTTP_BASE_URL=${USER_API_HTTP_BASE_URL}
+    restart: on-failure
+    volumes:
+      - api:/usr/src/app/
+    depends_on:
+      - trans-api-mysql
+    networks:
+      - trans-api
+
+
+  trans-api-mysql:
+    image: mysql:latest
+    container_name: trans_api_mysql
+    ports:
+      - 3312:3306
+    entrypoint:
+      sh -c "
+      echo 'CREATE DATABASE IF NOT EXISTS transaction_api' > /docker-entrypoint-initdb.d/init.sql;
+      /usr/local/bin/docker-entrypoint.sh --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+      "
+    environment:
+      - MYSQL_ROOT_HOST=${TRANSACTION_API_MYSQL_HOST}
+      - MYSQL_USER=${TRANSACTION_API_MYSQL_USERNAME}
+      - MYSQL_PASSWORD=${TRANSACTION_API_MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${TRANSACTION_API_MYSQL_DB_NAME}
+      - MYSQL_ROOT_PASSWORD=${TRANSACTION_API_MYSQL_PASSWORD}
+    volumes:
+      - database_mysql:/var/lib/mysql
+    networks:
+      - trans-api
+
+  migrate:
+    image: migrate/migrate
+    restart: on-failure
+    depends_on:
+      - trans-api-mysql
+    networks:
+      - trans-api
+    volumes:
+      - ./database/migrations/mysql:/migrations
+
+    command: -path=/migrations -database "mysql://${TRANSACTION_API_MYSQL_USERNAME}:${TRANSACTION_API_MYSQL_PASSWORD}@tcp(trans-api-mysql:3306)/${TRANSACTION_API_MYSQL_DB_NAME}" up
+
+volumes:
+  api:
+  database_mysql:
+
+# Networks to be created to facilitate communication between containers
+networks:
+  trans-api:
+    driver: bridge
