@@ -67,3 +67,7 @@ type GetTransactionDetailResponse struct {
 type UpdateTransactionRequest struct {
 	Transaction *Transaction `json:"transaction"`
 }
+
+type UpdateTransactionResponse struct {
+	Transaction *Transaction `json:"transaction"`
+}

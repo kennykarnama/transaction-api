@@ -69,5 +69,10 @@ func (s *service) DeleteTransactionItemByIDs(ctx context.Context, transID int64,
 // TODO: acquire lock
 func (s *service) UpdateTranscationByID(ctx context.Context, transID int64, data *transactionEntity.Transaction) error {
 	data.ID = transID
+	for idx, item := range data.TransactionItems {
+		if item.ID == 0 {
+			data.TransactionItems[idx].UUID = uuid.NewV4().String()
+		}
+	}
 	return s.transRepo.UpdateTransaction(ctx, transID, data)
 }

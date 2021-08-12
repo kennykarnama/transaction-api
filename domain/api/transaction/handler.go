@@ -277,6 +277,6 @@ func (h *Handler) UpdateTransactionByID(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	shared.ResponseJson(w, shared.Empty{}, http.StatusOK)
+	shared.ResponseJson(w, ParseToTranscationResponse(newTrans), http.StatusOK)
 	return
 }

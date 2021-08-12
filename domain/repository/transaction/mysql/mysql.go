@@ -94,7 +94,7 @@ func (r *repository) DeleteTransactionItemByIDs(ctx context.Context, itemID int6
 
 func (r *repository) UpdateTransaction(ctx context.Context, transID int64, data *transaction.Transaction) error {
 	db := r.db.Session(&gorm.Session{FullSaveAssociations: true})
-	err := db.Updates(data).Error
+	err := db.Updates(*data).Error
 	if err != nil {
 		return err
 	}

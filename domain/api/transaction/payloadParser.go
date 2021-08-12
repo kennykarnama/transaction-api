@@ -44,12 +44,12 @@ func ParseToTransaction(transaction *Transaction) *transEntity.Transaction {
 		TotalAmount:      transaction.TotalAmount,
 		PaidAmount:       transaction.PaidAmount,
 		ChangeAmount:     transaction.ChangeAmount,
-		TransactionItems: []*transEntity.TransactionItem{},
+		TransactionItems: []transEntity.TransactionItem{},
 	}
 	v := transEntity.StringToPaymentMethod(transaction.PaymentMethod)
 	trans.PaymentMethod = v.String()
 	for _, item := range transaction.Items {
-		trans.TransactionItems = append(trans.TransactionItems, &transEntity.TransactionItem{
+		trans.TransactionItems = append(trans.TransactionItems, transEntity.TransactionItem{
 			ID:            item.ID,
 			UUID:          item.UUID,
 			TransactionID: item.TransactionID,
